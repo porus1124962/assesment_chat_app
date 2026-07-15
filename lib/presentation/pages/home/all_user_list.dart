@@ -12,13 +12,9 @@ import '../../../domain/entities/message.dart';
 import '../../widgets/user_tile.dart';
 
 class AllUserList extends StatefulWidget {
-
   final Function(String userId, String userName) onUserTap;
 
-  const AllUserList({
-    super.key,
-    required this.onUserTap,
-  });
+  const AllUserList({super.key, required this.onUserTap});
 
   @override
   State<AllUserList> createState() => _AllUserListState();
@@ -37,18 +33,24 @@ class _AllUserListState extends State<AllUserList> {
     context.read<AllUserListCubit>().fetchUsers(currentUserId: _currentUserId);
   }
 
-  Message? _lastMessageForUser(AllUserListLoaded state, String userId) {
-    if (_currentUserId == null) return null;
-
-    ChatEntity? chat;
-    for (final item in state.chats) {
-      if (item.participants.contains(_currentUserId) && item.participants.contains(userId)) {
-        chat = item;
-        break;
-      }
+  ChatEntity? _chatForUser(AllUserListLoaded state, String userId) {
+    if (_currentUserId == null) {
+      return null;
     }
 
-    if (chat == null || chat.lastMessage == null || chat.lastMessageSenderId == null) {
+    for (final item in state.chats) {
+      if (item.participants.contains(_currentUserId) &&
+          item.participants.contains(userId)) {
+        return item;
+      }
+    }
+    return null;
+  }
+
+  Message? _lastMessageFromChat(ChatEntity? chat, String userId) {
+    if (chat == null ||
+        chat.lastMessage == null ||
+        chat.lastMessageSenderId == null) {
       return null;
     }
 
@@ -61,15 +63,34 @@ class _AllUserListState extends State<AllUserList> {
     );
   }
 
+  bool _isUnreadChat(ChatEntity? chat) {
+    if (_currentUserId == null ||
+        chat == null ||
+        chat.lastMessage == null ||
+        chat.lastMessageSenderId == null) {
+      return false;
+    }
+
+    if (chat.lastMessageSenderId == _currentUserId) {
+      return false;
+    }
+
+    final status = chat.lastMessageStatus;
+    if (status == null) {
+      return false;
+    }
+    return status != MessageStatus.read.index;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Users'),
-      ),
+      appBar: AppBar(title: const Text('Users')),
       body: RefreshIndicator(
         onRefresh: () async {
-          await context.read<AllUserListCubit>().fetchUsers(currentUserId: _currentUserId);
+          await context.read<AllUserListCubit>().fetchUsers(
+            currentUserId: _currentUserId,
+          );
         },
         child: BlocBuilder<AllUserListCubit, AllUserListState>(
           builder: (context, state) {
@@ -81,7 +102,9 @@ class _AllUserListState extends State<AllUserList> {
               return error_widget.ErrorWidget(
                 message: state.message,
                 onRetry: () {
-                  context.read<AllUserListCubit>().retryFetch(currentUserId: _currentUserId);
+                  context.read<AllUserListCubit>().retryFetch(
+                    currentUserId: _currentUserId,
+                  );
                 },
               );
             }
@@ -104,7 +127,9 @@ class _AllUserListState extends State<AllUserList> {
                     const SizedBox(height: defaultPadding),
                     ElevatedButton.icon(
                       onPressed: () {
-                        context.read<AllUserListCubit>().retryFetch(currentUserId: _currentUserId);
+                        context.read<AllUserListCubit>().retryFetch(
+                          currentUserId: _currentUserId,
+                        );
                       },
                       icon: const Icon(Icons.refresh),
                       label: const Text('Refresh'),
@@ -119,11 +144,13 @@ class _AllUserListState extends State<AllUserList> {
                 itemCount: state.users.length,
                 itemBuilder: (context, index) {
                   final user = state.users[index];
-                  final lastMessage = _lastMessageForUser(state, user.id);
+                  final chat = _chatForUser(state, user.id);
+                  final lastMessage = _lastMessageFromChat(chat, user.id);
                   return UserTile(
                     user: user,
                     currentUserId: _currentUserId,
                     lastMessage: lastMessage,
+                    isUnread: _isUnreadChat(chat),
                     onTap: () {
                       widget.onUserTap(user.id, user.name);
                     },

@@ -27,6 +27,7 @@ const String storageImagesFolder = 'images';
 const String storageVideosFolder = 'videos';
 const String storageAudioFolder = 'audio';
 const String storageDocumentsFolder = 'documents';
+const String storageProfilePicturesFolder = 'profile_pictures';
 
 // UI Constants
 const double defaultPadding = 16.0;

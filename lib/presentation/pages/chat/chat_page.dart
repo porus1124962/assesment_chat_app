@@ -359,7 +359,11 @@ class _ChatPageState extends State<ChatPage> {
             Expanded(
               child: BlocConsumer<ChatCubit, ChatState>(
                 listener: (context, state) {
-                  _handleMessagesUpdated(_messagesFromState(state));
+                  final messages = _messagesFromState(state);
+                  _handleMessagesUpdated(messages);
+                  if (_isUserNearBottom && messages.isNotEmpty) {
+                    context.read<ChatCubit>().markMessagesAsRead();
+                  }
                 },
                 builder: (context, state) {
                   if (state is ChatLoading) {

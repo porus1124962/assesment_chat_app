@@ -1,5 +1,9 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' as auth;
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:path/path.dart' as p;
 
 import '../models/user_model.dart';
 import '../../core/errors/exceptions.dart';
@@ -10,6 +14,7 @@ abstract class AuthRemoteDataSource {
     required String email,
     required String password,
     required String name,
+    String? profilePicturePath,
   });
 
   Future<UserModel> login({
@@ -21,19 +26,31 @@ abstract class AuthRemoteDataSource {
 
   Future<UserModel?> getCurrentUser();
 
+  Future<UserModel> updateUserProfile(
+    UserModel user, {
+    String? profilePicturePath,
+  });
+
   Stream<auth.User?> get authStateChanges;
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   final auth.FirebaseAuth firebaseAuth;
+  final FirebaseFirestore firebaseFirestore;
+  final FirebaseStorage firebaseStorage;
 
-  AuthRemoteDataSourceImpl({required this.firebaseAuth});
+  AuthRemoteDataSourceImpl({
+    required this.firebaseAuth,
+    required this.firebaseFirestore,
+    required this.firebaseStorage,
+  });
 
   @override
   Future<UserModel> signup({
     required String email,
     required String password,
     required String name,
+    String? profilePicturePath,
   }) async {
     try {
       final userCredential = await firebaseAuth
@@ -43,15 +60,21 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       final user = userCredential.user;
       if (user == null) throw AuthException('User creation failed');
 
+      final profilePictureUrl = await _uploadProfilePicture(
+        userId: user.uid,
+        picturePath: profilePicturePath,
+      );
+
       final userModel = UserModel(
         id: user.uid,
         email: email,
         name: name,
+        profilePictureUrl: profilePictureUrl,
         createdAt: DateTime.now(),
       );
 
       // Store user in Firestore
-      await FirebaseFirestore.instance
+      await firebaseFirestore
           .collection(usersCollection)
           .doc(user.uid)
           .set(userModel.toJson())
@@ -62,6 +85,40 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       throw AuthException(e.message ?? 'Auth error occurred');
     } catch (e) {
       throw AuthException('Signup failed: $e');
+    }
+  }
+
+  @override
+  Future<UserModel> updateUserProfile(
+    UserModel user, {
+    String? profilePicturePath,
+  }) async {
+    try {
+      final profilePictureUrl = profilePicturePath == null
+          ? user.profilePictureUrl
+          : await _uploadProfilePicture(
+              userId: user.id,
+              picturePath: profilePicturePath,
+            );
+
+      final updatedUser = UserModel(
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        profilePictureUrl: profilePictureUrl,
+        createdAt: user.createdAt,
+        lastSeenAt: user.lastSeenAt,
+      );
+
+      await firebaseFirestore
+          .collection(usersCollection)
+          .doc(user.id)
+          .set(updatedUser.toJson(), SetOptions(merge: true))
+          .timeout(firestoreTimeout);
+
+      return updatedUser;
+    } catch (e) {
+      throw AuthException('Profile update failed: $e');
     }
   }
 
@@ -109,7 +166,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       final user = firebaseAuth.currentUser;
       if (user == null) return null;
 
-      final snapshot = await FirebaseFirestore.instance
+      final snapshot = await firebaseFirestore
           .collection(usersCollection)
           .doc(user.uid)
           .get()
@@ -125,4 +182,30 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
   @override
   Stream<auth.User?> get authStateChanges => firebaseAuth.authStateChanges();
+
+  Future<String?> _uploadProfilePicture({
+    required String userId,
+    required String? picturePath,
+  }) async {
+    if (picturePath == null || picturePath.isEmpty) {
+      return null;
+    }
+
+    final file = File(picturePath);
+    if (!await file.exists()) {
+      throw ValidationException('Selected profile picture does not exist.');
+    }
+
+    final extension = p.extension(picturePath).replaceFirst('.', '');
+    final fileName = '${DateTime.now().millisecondsSinceEpoch}.$extension';
+    final storagePath =
+        '$storageRootMediaPath/$storageProfilePicturesFolder/$userId/$fileName';
+
+    final snapshot = await firebaseStorage
+        .ref(storagePath)
+        .putFile(file)
+        .timeout(firestoreTimeout);
+
+    return snapshot.ref.getDownloadURL();
+  }
 }

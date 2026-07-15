@@ -5,6 +5,7 @@ abstract class AuthRepository {
     required String email,
     required String password,
     required String name,
+    String? profilePicturePath,
   });
 
   Future<User> login({
@@ -16,7 +17,10 @@ abstract class AuthRepository {
 
   Future<User?> getCurrentUser();
 
-  Future<void> updateUserProfile(User user);
+  Future<User> updateUserProfile(
+    User user, {
+    String? profilePicturePath,
+  });
 
   Stream<User?> get authStateChanges;
 }

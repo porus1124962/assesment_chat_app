@@ -56,6 +56,7 @@ class DefaultFirebaseOptions {
     projectId: 'chat-app-a93aa',
     storageBucket: 'chat-app-a93aa.firebasestorage.app',
   );
+
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyAHbX-68bfr-qUe0uQbmn3aTrPSRzGbo44',
     appId: '1:509651757820:ios:29cad90bcb5020b6c3c579',

@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../core/utils/constants.dart';
 import '../../../core/widgets/custom_snackbar.dart';
@@ -17,13 +20,19 @@ class EditProfilePage extends StatefulWidget {
 class _EditProfilePageState extends State<EditProfilePage> {
   late final TextEditingController nameController;
   late final String _initialName;
+  late final String? _initialProfilePictureUrl;
+  final ImagePicker _imagePicker = ImagePicker();
+  String? _profilePicturePath;
 
   @override
   void initState() {
     super.initState();
     final authState = context.read<AuthCubit>().state;
     final currentName = authState is AuthSuccess ? authState.user.name : '';
+    final currentPictureUrl =
+        authState is AuthSuccess ? authState.user.profilePictureUrl : null;
     _initialName = currentName;
+    _initialProfilePictureUrl = currentPictureUrl;
     nameController = TextEditingController(text: currentName);
   }
 
@@ -60,7 +69,19 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
   Future<void> _handleSave() async {
     if (!_validateForm()) return;
-    await context.read<AuthCubit>().updateProfileName(nameController.text);
+    await context.read<AuthCubit>().updateProfile(
+      name: nameController.text,
+      profilePicturePath: _profilePicturePath,
+    );
+  }
+
+  Future<void> _pickProfilePicture() async {
+    final picked = await _imagePicker.pickImage(source: ImageSource.gallery);
+    if (picked == null) return;
+    if (!mounted) return;
+    setState(() {
+      _profilePicturePath = picked.path;
+    });
   }
 
   @override
@@ -68,7 +89,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final currentName = nameController.text.trim();
-    final isChanged = currentName != _initialName.trim();
+    final isChanged =
+        currentName != _initialName.trim() || _profilePicturePath != null;
     final isSaveEnabled = currentName.isNotEmpty && isChanged;
 
     return Scaffold(
@@ -104,15 +126,46 @@ class _EditProfilePageState extends State<EditProfilePage> {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                CircleAvatar(
-                  radius: 42,
-                  backgroundColor: colorScheme.primaryContainer,
-                  child: Text(
-                    _initialsFromName(currentName),
-                    style: theme.textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: colorScheme.onPrimaryContainer,
-                    ),
+                Center(
+                  child: Stack(
+                    alignment: Alignment.bottomRight,
+                    children: [
+                      CircleAvatar(
+                        radius: 42,
+                        backgroundColor: colorScheme.primaryContainer,
+                        backgroundImage: _profilePicturePath != null
+                            ? FileImage(File(_profilePicturePath!))
+                            : _initialProfilePictureUrl != null
+                            ? NetworkImage(_initialProfilePictureUrl!)
+                            : null,
+                        child: _profilePicturePath == null &&
+                                _initialProfilePictureUrl == null
+                            ? Text(
+                                _initialsFromName(currentName),
+                                style: theme.textTheme.headlineSmall?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  color: colorScheme.onPrimaryContainer,
+                                ),
+                              )
+                            : null,
+                      ),
+                      Positioned(
+                        right: 0,
+                        bottom: 0,
+                        child: GestureDetector(
+                          onTap: _pickProfilePicture,
+                          child: CircleAvatar(
+                            radius: 15,
+                            backgroundColor: colorScheme.primary,
+                            child: const Icon(
+                              Icons.camera_alt,
+                              size: 15,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: defaultPadding),

@@ -8,6 +8,7 @@ class UserTile extends StatelessWidget {
   final User user;
   final Message? lastMessage;
   final String? currentUserId;
+  final bool isUnread;
   final VoidCallback onTap;
 
   const UserTile({
@@ -15,6 +16,7 @@ class UserTile extends StatelessWidget {
     required this.user,
     this.lastMessage,
     this.currentUserId,
+    this.isUnread = false,
     required this.onTap,
   });
 
@@ -69,11 +71,20 @@ class UserTile extends StatelessWidget {
     return _PreviewData(text: '${user.name}: $previewText', icon: previewIcon);
   }
 
+  String _initialsFromName(String name) {
+    final parts = name
+        .trim()
+        .split(RegExp(r'\s+'))
+        .where((part) => part.isNotEmpty)
+        .toList();
+    if (parts.isEmpty) return '?';
+    return parts.first[0].toUpperCase();
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final preview = _getPreviewData();
-
 
     return Material(
       color: Colors.transparent,
@@ -93,42 +104,26 @@ class UserTile extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
             child: Row(
               children: [
-                // Avatar
-                Stack(
-                  children: [
+
                     CircleAvatar(
                       radius: 24,
                       backgroundColor: Theme.of(context).primaryColor,
-                      child: Text(
-                        user.name[0].toUpperCase(),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 20,
-                        ),
-                      ),
+                      backgroundImage: user.profilePictureUrl == null
+                          ? null
+                          : NetworkImage(user.profilePictureUrl!),
+                      child: user.profilePictureUrl == null
+                          ? Text(
+                              _initialsFromName(user.name),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              ),
+                            )
+                          : null,
                     ),
-                    // Online indicator
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: Container(
-                        width: 14,
-                        height: 14,
-                        decoration: BoxDecoration(
-                          color: Colors.green,
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: isDark
-                                ? Colors.grey[900]!
-                                : Colors.grey[50]!,
-                            width: 2,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+
+
                 const SizedBox(width: 14),
                 // Chat info
                 Expanded(
@@ -174,7 +169,9 @@ class UserTile extends StatelessWidget {
                                               ? Colors.grey[400]
                                               : Colors.grey[600],
                                           fontSize: 13,
-                                          fontWeight: FontWeight.w400,
+                                          fontWeight: isUnread
+                                              ? FontWeight.w700
+                                              : FontWeight.w400,
                                         ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
@@ -184,16 +181,32 @@ class UserTile extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(width: 8),
-                          if (lastMessage != null)
-                            Text(
-                              _formatTime(lastMessage!.timestamp),
-                              style: Theme.of(context).textTheme.labelSmall
-                                  ?.copyWith(
+                          Row(
+                            children: [
+                              if (lastMessage != null)
+                                Text(
+                                  _formatTime(lastMessage!.timestamp),
+                                  style: Theme.of(context).textTheme.labelSmall
+                                      ?.copyWith(
+                                        color: Theme.of(context).primaryColor,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                ),
+                              if (isUnread) ...[
+                                if (lastMessage != null)
+                                  const SizedBox(width: 6),
+                                Container(
+                                  width: 8,
+                                  height: 8,
+                                  decoration: BoxDecoration(
                                     color: Theme.of(context).primaryColor,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500,
+                                    shape: BoxShape.circle,
                                   ),
-                            ),
+                                ),
+                              ],
+                            ],
+                          ),
                         ],
                       ),
                     ],

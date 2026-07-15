@@ -76,6 +76,7 @@ class MessageRepositoryImpl implements MessageRepository {
         'participants': [message.senderId, message.receiverId],
         'lastMessage': _chatPreviewText(message),
         'lastMessageSenderId': message.senderId,
+        'lastMessageStatus': message.status.index,
         'updatedAt': FieldValue.serverTimestamp(),
         'createdAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
@@ -387,10 +388,41 @@ class MessageRepositoryImpl implements MessageRepository {
   }
 
   @override
+  Future<void> updateMessageStatuses({
+    required String chatId,
+    required List<String> messageIds,
+    required MessageStatus status,
+  }) async {
+    if (messageIds.isEmpty) return;
+
+    try {
+      final batch = firestore.batch();
+      final messagesRef = firestore
+          .collection(chatsCollection)
+          .doc(chatId)
+          .collection(messagesSubcollection);
+
+      for (final messageId in messageIds.toSet()) {
+        batch.update(messagesRef.doc(messageId), {'status': status.index});
+      }
+
+      await batch.commit();
+      await _syncChatPreviewWithLatestMessage(
+        chatId: chatId,
+        touchUpdatedAt: false,
+      );
+    } on FirebaseException catch (e) {
+      throw FirestoreException(
+        'Failed to update message statuses: ${e.message}',
+      );
+    } catch (e) {
+      throw FirestoreException('Failed to update message statuses: $e');
+    }
+  }
+
+  @override
   Future<void> deleteMessage(String chatId, String messageId) async {
     try {
-      final chatRef = firestore.collection(chatsCollection).doc(chatId);
-      final messagesRef = chatRef.collection(messagesSubcollection);
       final msgRef = firestore
           .collection(chatsCollection)
           .doc(chatId)
@@ -400,25 +432,45 @@ class MessageRepositoryImpl implements MessageRepository {
         'isDeleted': true,
         'deletedAt': FieldValue.serverTimestamp(),
       });
-
-      final latestVisibleMessage = await _findLatestVisibleMessage(messagesRef);
-      if (latestVisibleMessage == null) {
-        await chatRef.set({
-          'lastMessage': FieldValue.delete(),
-          'lastMessageSenderId': FieldValue.delete(),
-          'updatedAt': FieldValue.serverTimestamp(),
-        }, SetOptions(merge: true));
-        return;
-      }
-
-      await chatRef.set({
-        'lastMessage': _chatPreviewText(latestVisibleMessage),
-        'lastMessageSenderId': latestVisibleMessage.senderId,
-        'updatedAt': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
+      await _syncChatPreviewWithLatestMessage(
+        chatId: chatId,
+        touchUpdatedAt: true,
+      );
     } catch (e) {
       throw FirestoreException('Failed to delete message: $e');
     }
+  }
+
+  Future<void> _syncChatPreviewWithLatestMessage({
+    required String chatId,
+    required bool touchUpdatedAt,
+  }) async {
+    final chatRef = firestore.collection(chatsCollection).doc(chatId);
+    final messagesRef = chatRef.collection(messagesSubcollection);
+    final latestVisibleMessage = await _findLatestVisibleMessage(messagesRef);
+
+    if (latestVisibleMessage == null) {
+      final update = <String, dynamic>{
+        'lastMessage': FieldValue.delete(),
+        'lastMessageSenderId': FieldValue.delete(),
+        'lastMessageStatus': FieldValue.delete(),
+      };
+      if (touchUpdatedAt) {
+        update['updatedAt'] = FieldValue.serverTimestamp();
+      }
+      await chatRef.set(update, SetOptions(merge: true));
+      return;
+    }
+
+    final update = <String, dynamic>{
+      'lastMessage': _chatPreviewText(latestVisibleMessage),
+      'lastMessageSenderId': latestVisibleMessage.senderId,
+      'lastMessageStatus': latestVisibleMessage.status.index,
+    };
+    if (touchUpdatedAt) {
+      update['updatedAt'] = FieldValue.serverTimestamp();
+    }
+    await chatRef.set(update, SetOptions(merge: true));
   }
 
   Future<Message?> _findLatestVisibleMessage(

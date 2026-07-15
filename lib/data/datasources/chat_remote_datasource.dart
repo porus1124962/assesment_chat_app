@@ -44,11 +44,13 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       final snapshot = await docRef.get().timeout(firestoreTimeout);
       if (!snapshot.exists) {
         final participants = [user1, user2]..sort();
-        await docRef.set({
-          'participants': participants,
-          'createdAt': FieldValue.serverTimestamp(),
-          'updatedAt': FieldValue.serverTimestamp(),
-        }).timeout(firestoreTimeout);
+        await docRef
+            .set({
+              'participants': participants,
+              'createdAt': FieldValue.serverTimestamp(),
+              'updatedAt': FieldValue.serverTimestamp(),
+            })
+            .timeout(firestoreTimeout);
       }
       return chatId;
     } on FirebaseException catch (e) {
@@ -67,11 +69,13 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       final snapshot = await docRef.get().timeout(firestoreTimeout);
       if (!snapshot.exists) {
         final participants = [user1, user2]..sort();
-        await docRef.set({
-          'participants': participants,
-          'createdAt': FieldValue.serverTimestamp(),
-          'updatedAt': FieldValue.serverTimestamp(),
-        }).timeout(firestoreTimeout);
+        await docRef
+            .set({
+              'participants': participants,
+              'createdAt': FieldValue.serverTimestamp(),
+              'updatedAt': FieldValue.serverTimestamp(),
+            })
+            .timeout(firestoreTimeout);
       }
     } on FirebaseException catch (e) {
       throw FirestoreException('Failed to create chat: ${e.message}');
@@ -90,7 +94,12 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
 
       return query.snapshots().map((snapshot) {
         return snapshot.docs
-            .map((doc) => ChatModel.fromMap(doc.id, Map<String, dynamic>.from(doc.data() as Map)))
+            .map(
+              (doc) => ChatModel.fromMap(
+                doc.id,
+                Map<String, dynamic>.from(doc.data() as Map),
+              ),
+            )
             .toList();
       });
     } catch (e) {
@@ -133,7 +142,9 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
           .orderBy('timestamp', descending: false);
 
       return ref.snapshots().map((snapshot) {
-        return snapshot.docs.map((doc) => MessageModel.fromJson(_normalizeMessageData(doc))).toList();
+        return snapshot.docs
+            .map((doc) => MessageModel.fromJson(_normalizeMessageData(doc)))
+            .toList();
       });
     } catch (e) {
       throw FirestoreException('Failed to get messages stream: $e');
@@ -155,7 +166,9 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       'text': message.text,
       'timestamp': FieldValue.serverTimestamp(),
       'status': message.status,
-      'editedAt': message.editedAt == null ? null : FieldValue.serverTimestamp(),
+      'editedAt': message.editedAt == null
+          ? null
+          : FieldValue.serverTimestamp(),
       'isDeleted': message.isDeleted,
     };
 
@@ -163,6 +176,7 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       'participants': participants,
       'lastMessage': message.text,
       'lastMessageSenderId': message.senderId,
+      'lastMessageStatus': message.status,
       'updatedAt': FieldValue.serverTimestamp(),
     };
 
@@ -180,7 +194,11 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
   }
 
   @override
-  Future<void> updateMessage(String chatId, String messageId, String newText) async {
+  Future<void> updateMessage(
+    String chatId,
+    String messageId,
+    String newText,
+  ) async {
     try {
       final msgRef = firebaseFirestore
           .collection(chatsCollection)
@@ -188,10 +206,9 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
           .collection(messagesSubcollection)
           .doc(messageId);
 
-      await msgRef.update({
-        'text': newText,
-        'editedAt': FieldValue.serverTimestamp(),
-      }).timeout(firestoreTimeout);
+      await msgRef
+          .update({'text': newText, 'editedAt': FieldValue.serverTimestamp()})
+          .timeout(firestoreTimeout);
 
       // Optionally update chat's lastMessage/updatedAt if this message is the last one - omitted for simplicity
     } on FirebaseException catch (e) {
@@ -210,10 +227,12 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
           .collection(messagesSubcollection)
           .doc(messageId);
 
-      await msgRef.update({
-        'isDeleted': true,
-        'deletedAt': FieldValue.serverTimestamp(),
-      }).timeout(firestoreTimeout);
+      await msgRef
+          .update({
+            'isDeleted': true,
+            'deletedAt': FieldValue.serverTimestamp(),
+          })
+          .timeout(firestoreTimeout);
     } on FirebaseException catch (e) {
       throw FirestoreException('Failed to delete message: ${e.message}');
     } catch (e) {
@@ -233,8 +252,12 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       final snapshot = await query.get().timeout(firestoreTimeout);
 
       for (final doc in snapshot.docs) {
-        final data = Map<String, dynamic>.from(doc.data() as Map<String, dynamic>);
-        final participants = (data['participants'] as List<dynamic>?)?.map((e) => e as String).toList() ?? [];
+        final data = Map<String, dynamic>.from(doc.data());
+        final participants =
+            (data['participants'] as List<dynamic>?)
+                ?.map((e) => e as String)
+                .toList() ??
+            [];
         for (final p in participants) {
           if (p != userId) partners.add(p);
         }

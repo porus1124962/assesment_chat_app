@@ -142,13 +142,12 @@ class MessageBubble extends StatelessWidget {
                           ),
                         ),
                       ),
-                    if (isSent && message.status == MessageStatus.read)
+                    if (isSent)
                       Padding(
                         padding: const EdgeInsets.only(left: 4),
-                        child: Icon(
-                          Icons.done_all,
-                          size: 14,
-                          color: bubbleTextColor.withValues(alpha: .7),
+                        child: _MessageStatusIcon(
+                          status: message.status,
+                          baseColor: bubbleTextColor.withValues(alpha: .7),
                         ),
                       ),
                   ],
@@ -159,6 +158,31 @@ class MessageBubble extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class _MessageStatusIcon extends StatelessWidget {
+  final MessageStatus status;
+  final Color baseColor;
+
+  const _MessageStatusIcon({required this.status, required this.baseColor});
+
+  @override
+  Widget build(BuildContext context) {
+    switch (status) {
+      case MessageStatus.sending:
+        return Icon(Icons.schedule, size: 14, color: baseColor);
+      case MessageStatus.sent:
+        return Icon(Icons.done, size: 14, color: baseColor);
+      case MessageStatus.delivered:
+        return Icon(Icons.done_all, size: 14, color: baseColor);
+      case MessageStatus.read:
+        return const Icon(
+          Icons.done_all,
+          size: 14,
+          color: Colors.black,
+        );
+    }
   }
 }
 

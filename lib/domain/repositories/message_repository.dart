@@ -34,6 +34,11 @@ abstract class MessageRepository {
     Message message, {
     void Function(double progress)? onProgress,
   });
+  Future<void> updateMessageStatuses({
+    required String chatId,
+    required List<String> messageIds,
+    required MessageStatus status,
+  });
   Future<void> updateMessage(String chatId, Message message);
   Future<void> deleteMessage(String chatId, String messageId);
 }

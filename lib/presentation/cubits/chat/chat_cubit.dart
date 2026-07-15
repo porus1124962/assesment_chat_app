@@ -21,6 +21,9 @@ class ChatCubit extends Cubit<ChatState> {
   StreamSubscription<List<Message>>? _messagesSub;
   StreamSubscription<dynamic>? _connectivitySub;
   String? _chatId;
+  String? _currentUserId;
+  bool _isUpdatingDeliveryState = false;
+  bool _isUpdatingReadState = false;
 
   ChatCubit({
     required this.chatRepository,
@@ -45,6 +48,7 @@ class ChatCubit extends Cubit<ChatState> {
     await _messagesSub?.cancel();
 
     try {
+      _currentUserId = currentUserId;
       _chatId = await chatRepository.getOrCreateChatId(
         currentUserId,
         otherUserId,
@@ -54,6 +58,7 @@ class ChatCubit extends Cubit<ChatState> {
           emit(const ChatEmpty());
         } else {
           emit(ChatLoaded(messages));
+          _markIncomingMessagesDelivered(messages);
         }
       }, onError: (e) => emit(ChatError(e.toString())));
     } on FirestoreException catch (e) {
@@ -151,8 +156,7 @@ class ChatCubit extends Cubit<ChatState> {
     required String receiverId,
     required String filePath,
     required MessageType messageType,
-  }) async
-  {
+  }) async {
     final draft = Message(
       id: uuid.v4(),
       senderId: currentUserId,
@@ -337,6 +341,59 @@ class ChatCubit extends Cubit<ChatState> {
     }
   }
 
+  Future<void> markMessagesAsRead() async {
+    if (_chatId == null || _currentUserId == null || _isUpdatingReadState)
+      return;
+
+    final idsToMarkRead = _messagesFromState()
+        .where(
+          (message) =>
+              message.senderId != _currentUserId &&
+              message.status != MessageStatus.read,
+        )
+        .map((message) => message.id)
+        .toList();
+
+    if (idsToMarkRead.isEmpty) return;
+
+    _isUpdatingReadState = true;
+    try {
+      await messageRepository.updateMessageStatuses(
+        chatId: _chatId!,
+        messageIds: idsToMarkRead,
+        status: MessageStatus.read,
+      );
+    } finally {
+      _isUpdatingReadState = false;
+    }
+  }
+
+  void _markIncomingMessagesDelivered(List<Message> messages) {
+    if (_chatId == null || _currentUserId == null || _isUpdatingDeliveryState) {
+      return;
+    }
+
+    final idsToMarkDelivered = messages
+        .where(
+          (message) =>
+              message.senderId != _currentUserId &&
+              message.status == MessageStatus.sent,
+        )
+        .map((message) => message.id)
+        .toList();
+
+    if (idsToMarkDelivered.isEmpty) return;
+
+    _isUpdatingDeliveryState = true;
+    messageRepository
+        .updateMessageStatuses(
+          chatId: _chatId!,
+          messageIds: idsToMarkDelivered,
+          status: MessageStatus.delivered,
+        )
+        .whenComplete(() => _isUpdatingDeliveryState = false);
+  }
+
   void _emitProgress(String messageId, double progress, bool isUpload) {
     final updated = _replaceMessageById(
       messageId,
@@ -398,6 +455,7 @@ class ChatCubit extends Cubit<ChatState> {
     _messagesSub?.cancel();
     _messagesSub = null;
     _chatId = null;
+    _currentUserId = null;
     emit(const ChatInitial());
   }
 

@@ -5,6 +5,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:get_it/get_it.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../firebase_options.dart';
 
 import '../data/datasources/auth_remote_datasource.dart';
 import '../data/datasources/auth_local_datasource.dart';
@@ -28,7 +29,9 @@ import '../presentation/blocs/theme/theme_bloc.dart';
 final getIt = GetIt.instance;
 
 Future<void> setupFirebase() async {
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  await FirebaseAuth.instance.setLanguageCode('en');
 
   // Configure Firestore settings
   FirebaseFirestore.instance.settings = const Settings(
@@ -49,7 +52,11 @@ Future<void> setupDependencies() async {
 
   // Remote DataSources
   getIt.registerSingleton<AuthRemoteDataSource>(
-    AuthRemoteDataSourceImpl(firebaseAuth: getIt()),
+    AuthRemoteDataSourceImpl(
+      firebaseAuth: getIt(),
+      firebaseFirestore: getIt(),
+      firebaseStorage: getIt(),
+    ),
   );
   getIt.registerSingleton<UserRemoteDataSource>(
     UserRemoteDataSourceImpl(firebaseFirestore: getIt(), firebaseAuth: getIt()),
@@ -93,9 +100,7 @@ Future<void> setupDependencies() async {
 
   // Theme repository
   getIt.registerSingleton<ThemeRepository>(
-    ThemeRepositoryImpl(
-      localDataSource: getIt<ThemeLocalDataSource>(),
-    ),
+    ThemeRepositoryImpl(localDataSource: getIt<ThemeLocalDataSource>()),
   );
 
   // Cubits (using GetIt to manage lifecycle)

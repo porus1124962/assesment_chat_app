@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../../core/utils/constants.dart';
 import '../../../core/widgets/custom_snackbar.dart';
 import '../../cubits/auth/auth_cubit.dart';
@@ -20,6 +23,8 @@ class _RegisterPageState extends State<RegisterPage> {
   late TextEditingController emailController;
   late TextEditingController passwordController;
   late TextEditingController confirmPasswordController;
+  final ImagePicker _imagePicker = ImagePicker();
+  String? _profilePicturePath;
   bool obscurePassword = true;
   bool obscureConfirmPassword = true;
   bool _submitted = false;
@@ -49,7 +54,17 @@ class _RegisterPageState extends State<RegisterPage> {
       email: emailController.text.trim(),
       password: passwordController.text,
       name: nameController.text.trim(),
+      profilePicturePath: _profilePicturePath,
     );
+  }
+
+  Future<void> _pickProfilePicture() async {
+    final picked = await _imagePicker.pickImage(source: ImageSource.gallery);
+    if (picked == null) return;
+    if (!mounted) return;
+    setState(() {
+      _profilePicturePath = picked.path;
+    });
   }
 
   String? _validateName(String? value) {
@@ -134,6 +149,50 @@ class _RegisterPageState extends State<RegisterPage> {
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: defaultPadding * 2),
+                    Center(
+                      child: Stack(
+                        alignment: Alignment.bottomRight,
+                        children: [
+                          CircleAvatar(
+                            radius: 44,
+                            backgroundColor: Theme.of(context)
+                                .colorScheme
+                                .primaryContainer,
+                            backgroundImage: _profilePicturePath == null
+                                ? null
+                                : FileImage(File(_profilePicturePath!)),
+                            child: _profilePicturePath == null
+                                ? Icon(
+                                    Icons.person,
+                                    size: 44,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onPrimaryContainer,
+                                  )
+                                : null,
+                          ),
+                          Positioned(
+                            right: 0,
+                            bottom: 0,
+                            child: GestureDetector(
+                              onTap: _pickProfilePicture,
+                              child: CircleAvatar(
+                                radius: 15,
+                                backgroundColor: Theme.of(context)
+                                    .colorScheme
+                                    .primary,
+                                child: const Icon(
+                                  Icons.camera_alt,
+                                  size: 15,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: defaultPadding),
                     TextFormField(
                       controller: nameController,
                       validator: _validateName,

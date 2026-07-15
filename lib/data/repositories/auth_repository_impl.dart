@@ -1,11 +1,8 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 import '../datasources/auth_remote_datasource.dart';
 import '../datasources/auth_local_datasource.dart';
-import '../models/user_model.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
-import '../../core/utils/constants.dart';
+import '../models/user_model.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource remoteDataSource;
@@ -21,12 +18,14 @@ class AuthRepositoryImpl implements AuthRepository {
     required String email,
     required String password,
     required String name,
+    String? profilePicturePath,
   }) async {
     try {
       final userModel = await remoteDataSource.signup(
         email: email,
         password: password,
         name: name,
+        profilePicturePath: profilePicturePath,
       );
       // Cache user session
       await localDataSource.cacheUserSession(userModel);
@@ -84,15 +83,18 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<void> updateUserProfile(User user) async {
+  Future<User> updateUserProfile(
+    User user, {
+    String? profilePicturePath,
+  }) async {
     try {
       final userModel = UserModel.fromEntity(user);
-      await FirebaseFirestore.instance
-          .collection(usersCollection)
-          .doc(user.id)
-          .update(userModel.toJson())
-          .timeout(firestoreTimeout);
-      await localDataSource.cacheUserSession(userModel);
+      final updatedUserModel = await remoteDataSource.updateUserProfile(
+       userModel,
+       profilePicturePath: profilePicturePath,
+      );
+      await localDataSource.cacheUserSession(updatedUserModel);
+      return updatedUserModel.toEntity();
     } catch (e) {
       rethrow;
     }
