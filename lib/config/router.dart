@@ -40,8 +40,8 @@ class AppRouter {
             onLogout: () => _navigateToLogin(context),
             navigateAllUsers: () => _navigateToAllUser(context),
             navigateEditProfile: () => _navigateToEditProfile(context),
-            onUserTap: (userId, userName) {
-              _navigateToChat(context, userId, userName);
+            onUserTap: (userId, userName, {userImage}) {
+              _navigateToChat(context, userId, userName, userImage: userImage);
             },
           ),
         );
@@ -53,18 +53,20 @@ class AppRouter {
               chatRepository: getIt<ChatRepository>(),
             ),
             child: AllUserList(
-              onUserTap: (userId, userName) {
-                _navigateToChat(context, userId, userName);
+              onUserTap: (userId, userName, {userImage}) {
+                _navigateToChat(context, userId, userName, userImage: userImage);
               },
             ),
           ),
         );
       case chatRoute:
+
         final args = settings.arguments as Map<String, dynamic>;
         return MaterialPageRoute(
           builder: (context) => ChatPage(
             otherUserId: args['userId'] as String,
             otherUserName: args['userName'] as String,
+            otherUserImage: args['userImage'] as String?,
             onBack: () => Navigator.pop(context),
           ),
         );
@@ -99,12 +101,13 @@ class AppRouter {
   static void _navigateToChat(
     BuildContext context,
     String userId,
-    String userName,
-  ) {
+    String userName, {
+    String? userImage,
+  }) {
     Navigator.pushNamed(
       context,
       chatRoute,
-      arguments: {'userId': userId, 'userName': userName},
+      arguments: {'userId': userId, 'userName': userName, 'userImage': userImage},
     );
   }
 }

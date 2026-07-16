@@ -68,16 +68,19 @@ class MessageBubble extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final isDarkMode = theme.brightness == Brightness.dark;
+    
     final bubbleColor = isSent
         ? colorScheme.primaryContainer
-        : colorScheme.surfaceContainerHigh;
+        : (isDarkMode ? Colors.white : colorScheme.surfaceContainerHigh);
     final bubbleTextColor = isSent
         ? colorScheme.onPrimaryContainer
-        : colorScheme.onSurface;
+        : (isDarkMode ? Colors.black : colorScheme.onSurface);
     final timeFormat = DateFormat('HH:mm');
     final timestamp = timeFormat.format(message.timestamp);
 
     return GestureDetector(
+
       onLongPress: isSent ? () => _showOptions(context) : null,
       child: Align(
         alignment: isSent ? Alignment.centerRight : Alignment.centerLeft,

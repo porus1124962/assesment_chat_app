@@ -13,7 +13,7 @@ import '../../widgets/theme_toggle_button.dart';
 
 class HomePage extends StatefulWidget {
   final VoidCallback onLogout;
-  final Function(String userId, String userName) onUserTap;
+  final Function(String userId, String userName, {String? userImage}) onUserTap;
   final VoidCallback? navigateAllUsers;
   final VoidCallback? navigateEditProfile;
 
@@ -143,10 +143,13 @@ class _HomePageState extends State<HomePage> {
     return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(
-        floatingActionButton: FloatingActionButton(
-          onPressed: widget.navigateAllUsers,
-          backgroundColor: Theme.of(context).primaryColor,
-          child: const Icon(Icons.people, color: Colors.white),
+        floatingActionButton: Padding(
+          padding: const EdgeInsets.only(bottom: 18.0),
+          child: FloatingActionButton(
+            onPressed: widget.navigateAllUsers,
+            backgroundColor: Theme.of(context).primaryColor,
+            child: const Icon(Icons.people, color: Colors.white),
+          ),
         ),
         appBar: AppBar(
           automaticallyImplyActions: false,
@@ -342,7 +345,7 @@ class _HomePageState extends State<HomePage> {
                             lastMessage: lastMessage,
                             isUnread: _isUnreadChat(chat),
                             onTap: () {
-                              widget.onUserTap(user.id, user.name);
+                              widget.onUserTap(user.id, user.name, userImage: user.profilePictureUrl);
                             },
                           );
                         },

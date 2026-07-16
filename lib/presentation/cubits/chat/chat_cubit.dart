@@ -83,12 +83,12 @@ class ChatCubit extends Cubit<ChatState> {
         receiverId: receiverId,
         text: messageText,
         timestamp: DateTime.now(),
-        status: MessageStatus.sending,
+        status: MessageStatus.sent,
       );
 
+
       await messageRepository.sendMessage(message);
-      final updatedMessage = message.copyWith(status: MessageStatus.sent);
-      final newMessages = <Message>[...current, updatedMessage];
+      final newMessages = <Message>[...current, message];
 
       emit(MessageSent(newMessages));
       emit(ChatLoaded(newMessages));

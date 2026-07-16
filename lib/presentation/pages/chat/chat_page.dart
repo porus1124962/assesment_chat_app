@@ -19,12 +19,14 @@ import '../../widgets/message_input_field.dart';
 class ChatPage extends StatefulWidget {
   final String otherUserId;
   final String otherUserName;
+  final String? otherUserImage;
   final VoidCallback onBack;
 
   const ChatPage({
     super.key,
     required this.otherUserId,
     required this.otherUserName,
+    this.otherUserImage,
     required this.onBack,
   });
 
@@ -34,6 +36,7 @@ class ChatPage extends StatefulWidget {
 
 class _ChatPageState extends State<ChatPage> {
   static const double _autoScrollThreshold = 120;
+
 
   late ScrollController scrollController;
   late ChatCubit _chatCubit;
@@ -318,15 +321,29 @@ class _ChatPageState extends State<ChatPage> {
         ),
         title: Row(
           children: [
-            CircleAvatar(
-              radius: 18,
-              backgroundColor: colorScheme.primaryContainer,
-              child: Text(
-                _initialsFromName(widget.otherUserName),
-                style: theme.textTheme.titleSmall?.copyWith(
-                  color: colorScheme.onPrimaryContainer,
-                  fontWeight: FontWeight.w700,
+            Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: colorScheme.outline,
+                  width: 2,
                 ),
+              ),
+              child: CircleAvatar(
+                radius: 18,
+                backgroundColor: colorScheme.primaryContainer,
+                backgroundImage: widget.otherUserImage != null
+                    ? NetworkImage(widget.otherUserImage!)
+                    : null,
+                child: widget.otherUserImage == null
+                    ? Text(
+                        _initialsFromName(widget.otherUserName),
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          color: colorScheme.onPrimaryContainer,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      )
+                    : null,
               ),
             ),
             const SizedBox(width: 10),

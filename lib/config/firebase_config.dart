@@ -24,6 +24,7 @@ import '../domain/repositories/theme_repository.dart';
 import '../presentation/cubits/auth/auth_cubit.dart';
 import '../presentation/cubits/user/user_list_cubit.dart';
 import '../presentation/cubits/chat/chat_cubit.dart';
+import '../presentation/cubits/connectivity/connectivity_cubit.dart';
 import '../presentation/blocs/theme/theme_bloc.dart';
 
 final getIt = GetIt.instance;
@@ -125,6 +126,11 @@ Future<void> setupDependencies() async {
   getIt.registerSingleton<ThemeBloc>(
     ThemeBloc(themeRepository: getIt<ThemeRepository>()),
   );
+
+  // Connectivity Cubit
+  getIt.registerSingleton<ConnectivityCubit>(
+    ConnectivityCubit(),
+  );
 }
 
 List<BlocProvider> provideBlocProviders() {
@@ -133,5 +139,6 @@ List<BlocProvider> provideBlocProviders() {
     BlocProvider<UserListCubit>(create: (_) => getIt<UserListCubit>()),
     BlocProvider<ChatCubit>(create: (_) => getIt<ChatCubit>()),
     BlocProvider<ThemeBloc>(create: (_) => getIt<ThemeBloc>()),
+    BlocProvider<ConnectivityCubit>(create: (_) => getIt<ConnectivityCubit>()),
   ];
 }

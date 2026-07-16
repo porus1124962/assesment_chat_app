@@ -12,7 +12,7 @@ import '../../../domain/entities/message.dart';
 import '../../widgets/user_tile.dart';
 
 class AllUserList extends StatefulWidget {
-  final Function(String userId, String userName) onUserTap;
+  final Function(String userId, String userName, {String? userImage}) onUserTap;
 
   const AllUserList({super.key, required this.onUserTap});
 
@@ -152,7 +152,7 @@ class _AllUserListState extends State<AllUserList> {
                     lastMessage: lastMessage,
                     isUnread: _isUnreadChat(chat),
                     onTap: () {
-                      widget.onUserTap(user.id, user.name);
+                      widget.onUserTap(user.id, user.name, userImage: user.profilePictureUrl);
                     },
                   );
                 },
