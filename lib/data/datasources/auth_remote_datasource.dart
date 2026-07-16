@@ -135,7 +135,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       final user = userCredential.user;
       if (user == null) throw AuthException('Login failed');
 
-      final snapshot = await FirebaseFirestore.instance
+      final snapshot = await firebaseFirestore
           .collection(usersCollection)
           .doc(user.uid)
           .get()

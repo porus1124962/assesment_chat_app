@@ -1,14 +1,28 @@
-# Assessment Chat Application
+# ChatBASE - Assessment Chat Application
 
-**A production-ready Flutter chat application showcasing clean architecture, state management with BLoC pattern, and real-time Firebase integration.**
+** Flutter chat application showcasing clean architecture, state management with BLoC pattern, and real-time Firebase integration.**
 
+> **App Name**: ChatBASE - A name related to CodeBase Tech.
+
+---
+
+## ⚠️ Important Notes
+
+### GoogleServices Configuration
+✅ **GoogleServices file included** - The `google-services` files are already configured for Firebase integration. This enables seamless Firebase authentication and Firestore functionality for Assessment check.
+
+### Security Notice
+⚠️ **Assessment App - Relaxed Security**: This is an assessment/demonstration application, so certain security constraints have been intentionally relaxed to showcase functionality cleanly:
+- Firebase Security Rules are configured for ease of testing (not production-grade)
+- Some validations are simplified for demonstration purposes
 ---
 
 ## 📋 Project Overview
 
-The Assessment Chat Application is a comprehensive Flutter-based messaging platform designed to demonstrate best practices in mobile development. It features:
+The ChatBASE application is a comprehensive Flutter-based messaging platform designed to demonstrate best practices in mobile development. It features:
 
 - ✅ Real-time messaging with Firebase Firestore
+- ✅ Read receipts with delivery and read status ticks (✓ / ✓✓)
 - ✅ User authentication and management
 - ✅ Rich media support (images, videos, audio, files)
 - ✅ Connectivity monitoring and offline support
@@ -221,7 +235,7 @@ assesment_chat_app/
 ### 1. **Authentication & User Management**
 - User registration and login with Firebase Auth
 - User profile management
-- User search and discovery
+- User search
 - User listing with caching
 
 **Component**: `AuthCubit`, `AuthRepository`
@@ -232,7 +246,9 @@ assesment_chat_app/
 - Send and receive messages in real-time
 - Message persistence with Firestore
 - Message threading/grouping
-- Read receipts
+- Read receipts with visual indicators
+  - **Single Check ✓** - Message delivered to recipient
+  - **Double Check ✓✓** - Message read by recipient
 - Typing indicators (optional)
 
 **Components**: `MessageCubit`, `ChatCubit`, `MessageRepository`, `ChatRepository`
@@ -319,47 +335,6 @@ assesment_chat_app/
 ✅ Time-travel debugging
 
 ---
-
-## 🚀 Getting Started
-
-### Prerequisites
-- Flutter SDK: ^3.10.0
-- Dart: ^3.10.0
-- Firebase Project (for production)
-- Android Studio / Xcode (for respective platforms)
-
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd assesment_chat_app
-   ```
-
-2. **Install dependencies**
-   ```bash
-   flutter pub get
-   ```
-
-3. **Configure Firebase**
-   - Add your `google-services.json` (Android) in `android/app/`
-   - Add your Firebase config to iOS project
-   - Verify `firebase.json` configuration
-
-4. **Generate code**
-   ```bash
-   flutter pub run build_runner build --delete-conflicting-outputs
-   ```
-
-5. **Run the app**
-   ```bash
-   # Debug
-   flutter run
-
-   # Release
-   flutter run --release
-   ```
-
 ### Configuration Files
 
 - **`lib/config/firebase_config.dart`** - Firebase initialization
@@ -415,326 +390,4 @@ test/
 
 ---
 
-## 🔐 Security Features
-
-### Implemented
-✅ Firebase Authentication
-✅ Secure token management
-✅ User data validation
-✅ Input sanitization
-✅ HTTPS/TLS for all network requests
-✅ Local data protection (Hive)
-
-### Best Practices
-- ✅ Never store sensitive data in plain text
-- ✅ Use environment variables for API keys
-- ✅ Implement rate limiting on API calls
-- ✅ Validate user input on client and server
-- ✅ Use Firebase Security Rules for database access
-- ✅ Implement proper error handling without exposing sensitive info
-
----
-
-## 📈 Performance Optimizations
-
-### Implemented Features
-✅ Image compression before upload (flutter_image_compress)
-✅ Video compression and thumbnails
-✅ Lazy loading of user lists
-✅ Efficient message pagination
-✅ Local caching with Hive
-✅ BLoC rebuild optimization with `buildWhen`
-✅ Const constructors where applicable
-✅ Efficient stream management
-
-### Monitoring
-- Memory usage optimized
-- Build time minimized
-- Network requests batched where possible
-- Regular cleanup of resources
-
----
-
-## 🐛 Known Issues & Troubleshooting
-
-### Issue: Firebase Initialization Fails
-**Solution**: Ensure `google-services.json` is in `android/app/` directory and Firebase project is properly configured.
-
-### Issue: Connectivity Banner Not Showing
-**Solution**: Check `ConnectivityCubit` is properly provided in `app.dart` and `buildWhen` logic is correct.
-
-### Issue: Messages Not Syncing
-**Solution**: Verify Firestore rules allow read/write access and check network connectivity status.
-
-### Issue: Build Failures
-**Solution**: Run `flutter clean` and `flutter pub get` again, then rebuild.
-
-See `CONNECTIVITY_FIX_GUIDE.md` for detailed connectivity troubleshooting.
-
----
-
-## 📚 Component Documentation
-
-Detailed documentation for individual components:
-
-- **[UserListCubit Documentation](lib/presentation/cubits/user/README.md)** - User list state management
-- **[Connectivity Documentation](lib/presentation/cubits/connectivity/)** - Network status monitoring
-- **[Theme Documentation](lib/core/theme/)** - App theming system
-
----
-
-## 🔄 Dependency Injection & Service Locator
-
-The app uses **GetIt** for dependency injection:
-
-```dart
-// setup_dependencies() in config/service_locator.dart
-final getIt = GetIt.instance;
-
-// Usage in code
-final userRepository = getIt<UserRepository>();
-```
-
-### Registered Services
-- Repositories (User, Chat, Message, Auth)
-- Cubits and BLoCs
-- DataSources
-- Firebase instances
-
----
-
-## 🎨 UI/UX Features
-
-### Theme System
-- Material Design 3 compliance
-- Light and Dark modes
-- Smooth theme transitions
-- System-wide theme integration
-
-### Connectivity Indicator
-- Real-time status display
-- Color-coded status (green = connected, red = disconnected)
-- One-tap refresh action
-- Animated slide-in/out transitions
-
-### Message Bubbles
-- Different styling for sent vs received
-- Timestamps
-- Read receipts (visual indicator)
-- Media preview thumbnails
-- Typing indicators (optional)
-
-### User Interface
-- Clean, intuitive navigation
-- Rounded corners and shadows
-- Responsive layouts for different screen sizes
-- Accessibility considerations
-
----
-
-## 📋 Requirements Checklist - PROJECT COMPLETION
-
-### ✅ Architectural Requirements
-- [x] Clean Architecture implementation with Domain/Data/Presentation layers
-- [x] BLoC/Cubit pattern for state management
-- [x] Dependency injection with GetIt
-- [x] Repository pattern implementation
-- [x] Entity and Model separation
-
-### ✅ Feature Requirements
-- [x] User authentication (Firebase Auth)
-- [x] Real-time messaging (Firestore)
-- [x] User list and search
-- [x] Conversation management
-- [x] Rich media support (images, videos, audio, files)
-- [x] Media compression and optimization
-- [x] Offline support with local caching (Hive)
-- [x] Connectivity monitoring and indicator
-
-### ✅ UI/UX Requirements
-- [x] Material Design implementation
-- [x] Light and Dark theme support
-- [x] Responsive layouts
-- [x] Connectivity status banner
-- [x] Loading states
-- [x] Error handling and user feedback
-- [x] Smooth animations and transitions
-
-### ✅ Testing Requirements
-- [x] Unit tests for Cubits
-- [x] Unit tests for BLoCs
-- [x] Widget tests
-- [x] Model serialization tests
-- [x] Test coverage for critical flows
-
-### ✅ Code Quality Requirements
-- [x] Proper error handling
-- [x] Resource cleanup (stream cancellation, disposal)
-- [x] Null safety (sound null safety enabled)
-- [x] Linting compliance (flutter_lints)
-- [x] Meaningful code comments
-- [x] Consistent code formatting
-
-### ✅ Platform Support
-- [x] Android implementation
-- [x] iOS implementation
-- [x] Cross-platform compatibility
-
-### ✅ Documentation
-- [x] README.md (this file)
-- [x] Component documentation
-- [x] Code comments and docstrings
-- [x] Architecture documentation
-- [x] Troubleshooting guide
-
----
-
-## 📱 Platform-Specific Notes
-
-### Android
-- Minimum SDK: 21
-- Target SDK: 34 (latest)
-- Gradle build system (Kotlin DSL)
-- Firebase Google Services integration
-- Permissions: Internet, Read/Write external storage
-
-### iOS
-- Minimum deployment: iOS 11.0
-- CocoaPods dependency manager
-- Firebase integration
-- Xcode project configuration
-- App Transport Security settings
-
----
-
-## 🚢 Deployment
-
-### Building for Release
-
-```bash
-# Android APK
-flutter build apk --release
-
-# Android App Bundle (recommended for Play Store)
-flutter build appbundle --release
-
-# iOS
-flutter build ios --release
-```
-
-### Pre-Deployment Checklist
-- [ ] All tests passing
-- [ ] No linting errors
-- [ ] Performance profiling completed
-- [ ] Security audit passed
-- [ ] Firebase production rules configured
-- [ ] Analytics and crashlytics enabled
-- [ ] App version bumped
-- [ ] Release notes prepared
-
----
-
-## 🔮 Future Enhancements
-
-- [ ] Video call support (WebRTC)
-- [ ] Voice call support
-- [ ] Group chat functionality
-- [ ] Message search across all chats
-- [ ] User status (online/offline/away)
-- [ ] Last seen timestamps
-- [ ] Typing indicators (full implementation)
-- [ ] Emoji picker
-- [ ] Voice-to-text messaging
-- [ ] Message reactions/emoji reactions
-- [ ] Chat encryption (end-to-end)
-- [ ] Push notifications (Firebase Cloud Messaging)
-- [ ] Backup and restore functionality
-- [ ] User presence tracking
-- [ ] Message translation
-
----
-
-## 📞 Support & Contribution
-
-### Reporting Issues
-- File detailed bug reports with:
-  - Steps to reproduce
-  - Expected vs actual behavior
-  - Platform and device info
-  - Logs if available
-
-### Code Contribution
-1. Fork the repository
-2. Create feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing-feature`)
-5. Open Pull Request
-
-### Code Guidelines
-- Follow Effective Dart guidelines
-- Write meaningful commit messages
-- Add tests for new features
-- Update documentation
-- Ensure all tests pass
-
----
-
-## 📄 License
-
-This project is provided as-is for assessment purposes.
-
----
-
-## 👥 Team
-
-- **Development**: Flutter Development Team
-- **Architecture**: Clean Architecture Pattern
-- **Testing**: BloC Testing Framework
-- **Infrastructure**: Firebase
-
----
-
-## 📅 Project Information
-
-- **Created**: July 2026
-- **Version**: 1.0.0
-- **Status**: Production Ready ✅
-- **Last Updated**: July 16, 2026
-
----
-
-## 🗂️ Additional Resources
-
-### Documentation Files
-- `lib/presentation/cubits/user/README.md` - UserListCubit Documentation
-- `CONNECTIVITY_FIX_GUIDE.md` - Connectivity troubleshooting
-- `firebase.json` - Firebase configuration
-- `pubspec.yaml` - Dependencies and project metadata
-
-### Official Documentation
-- [Flutter Documentation](https://flutter.dev/docs)
-- [Firebase Documentation](https://firebase.google.com/docs)
-- [BLoC Documentation](https://bloclibrary.dev)
-- [GoRouter Documentation](https://pub.dev/packages/go_router)
-
-### Video Resources
-- Flutter State Management patterns
-- Firebase Realtime Collections
-- Clean Architecture in Flutter
-
----
-
-## ✨ Acknowledgments
-
-Special thanks to:
-- Flutter team for the excellent framework
-- Firebase for reliable backend services
-- BLoC library for state management patterns
-- All open-source contributors
-
----
-
-**Happy Coding! 🎉**
-
-For questions or clarifications about requirements, please refer to the specific component documentation or the troubleshooting guides.
 

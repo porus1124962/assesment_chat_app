@@ -29,6 +29,9 @@ const String storageAudioFolder = 'audio';
 const String storageDocumentsFolder = 'documents';
 const String storageProfilePicturesFolder = 'profile_pictures';
 
+// Pagination
+const int messagesPageSize = 20; // Load 20 messages per page
+
 // UI Constants
 const double defaultPadding = 16.0;
 const double defaultBorderRadius = 12.0;

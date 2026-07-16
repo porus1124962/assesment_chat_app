@@ -31,13 +31,13 @@ final getIt = GetIt.instance;
 
 Future<void> setupFirebase() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-
   await FirebaseAuth.instance.setLanguageCode('en');
 
-  // Configure Firestore settings
+  // Configure Firestore settings with proper persistence
   FirebaseFirestore.instance.settings = const Settings(
     persistenceEnabled: true,
     cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
+    sslEnabled: true,
   );
 }
 
@@ -128,9 +128,7 @@ Future<void> setupDependencies() async {
   );
 
   // Connectivity Cubit
-  getIt.registerSingleton<ConnectivityCubit>(
-    ConnectivityCubit(),
-  );
+  getIt.registerSingleton<ConnectivityCubit>(ConnectivityCubit());
 }
 
 List<BlocProvider> provideBlocProviders() {

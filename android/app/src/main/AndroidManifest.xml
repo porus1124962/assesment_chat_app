@@ -15,7 +15,7 @@
         tools:targetApi="4" />
 
     <application
-        android:label="assesment_chat_app"
+        android:label="ChatBASE"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

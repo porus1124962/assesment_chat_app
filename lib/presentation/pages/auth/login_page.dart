@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../config/router.dart';
 import '../../../core/utils/constants.dart';
 import '../../../core/widgets/custom_snackbar.dart';
 import '../../cubits/auth/auth_cubit.dart';
@@ -76,7 +77,9 @@ class _LoginPageState extends State<LoginPage> {
         padding: const EdgeInsets.all(defaultPadding),
         child: BlocListener<AuthCubit, AuthState>(
           listener: (context, state) {
-            if (state is AuthError) {
+            if (state is AuthSuccess) {
+              Navigator.pushReplacementNamed(context, AppRouter.homeRoute);
+            } else if (state is AuthError) {
               AppSnackBar.showError(context, state.message);
             }
           },
@@ -91,16 +94,16 @@ class _LoginPageState extends State<LoginPage> {
                     : AutovalidateMode.disabled,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
 
                     SizedBox(height: MediaQuery.of(context).size.height * 0.1),
 
-                    Text(
-                      'Login',
-                      style: Theme.of(context).textTheme.displayLarge,
-                      textAlign: TextAlign.center,
+                    Image.asset(
+                      'images/codebase_logo.png',
+                      height: 60,
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 10),
                     Text(
                       'Welcome Back',
                       style: Theme.of(context).textTheme.headlineMedium,

@@ -69,13 +69,7 @@ class _SplashPageState extends State<SplashPage> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   CircleAvatar(
-                    radius: 48,
-                    backgroundColor: colorScheme.onPrimary,
-                    child: Icon(
-                      Icons.chat_bubble_rounded,
-                      size: 48,
-                      color: colorScheme.primary,
-                    ),
+                    radius: 48, child: Image.asset("images/codebase_logo.png"),
                   ),
                   const SizedBox(height: 24),
                   Text(

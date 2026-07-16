@@ -1,14 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../core/widgets/custom_snackbar.dart';
 import '../blocs/theme/theme_bloc.dart';
 import '../blocs/theme/theme_event.dart';
 import '../blocs/theme/theme_state.dart';
 
-/// Example widget for theme switching.
-///
-/// Provides a button that cycles through light, dark, and system themes.
-/// Uses BLoC to dispatch theme change events.
 class ThemeToggleButton extends StatelessWidget {
   final void Function()? onThemeChanged;
 
@@ -43,7 +38,6 @@ class ThemeToggleButton extends StatelessWidget {
     };
   }
 
-  /// Get tooltip message for the current theme mode.
   String _getTooltipMessage(ThemeMode mode) {
     return switch (mode) {
       ThemeMode.light => 'Light mode - tap to switch to dark',
@@ -65,75 +59,5 @@ class ThemeToggleButton extends StatelessWidget {
 
     // Optional callback
     onThemeChanged?.call();
-
-    // Show feedback
-    AppSnackBar.showInfo(
-      context,
-      'Theme changed to ${nextMode.name}',
-      duration: const Duration(milliseconds: 800),
-    );
-  }
-}
-
-/// Alternative: Theme mode menu button for AppBar.
-///
-/// Displays a dropdown menu with theme options instead of cycling.
-class ThemeMenuButton extends StatelessWidget {
-  final void Function()? onThemeChanged;
-
-  const ThemeMenuButton({super.key, this.onThemeChanged});
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<ThemeBloc, ThemeState>(
-      builder: (context, state) {
-        final currentMode = state is ThemeStateData
-            ? state.themeMode
-            : ThemeMode.system;
-
-        return PopupMenuButton<ThemeMode>(
-          initialValue: currentMode,
-          onSelected: (ThemeMode mode) {
-            context.read<ThemeBloc>().add(ThemeChanged(mode));
-            onThemeChanged?.call();
-          },
-          itemBuilder: (BuildContext context) => <PopupMenuEntry<ThemeMode>>[
-            const PopupMenuItem<ThemeMode>(
-              value: ThemeMode.light,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.light_mode, size: 20),
-                  SizedBox(width: 12),
-                  Text('Light'),
-                ],
-              ),
-            ),
-            const PopupMenuItem<ThemeMode>(
-              value: ThemeMode.dark,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.dark_mode, size: 20),
-                  SizedBox(width: 12),
-                  Text('Dark'),
-                ],
-              ),
-            ),
-            const PopupMenuItem<ThemeMode>(
-              value: ThemeMode.system,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.brightness_auto, size: 20),
-                  SizedBox(width: 12),
-                  Text('System'),
-                ],
-              ),
-            ),
-          ],
-        );
-      },
-    );
   }
 }

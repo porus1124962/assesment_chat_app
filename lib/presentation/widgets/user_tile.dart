@@ -91,7 +91,7 @@ class UserTile extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         child: Container(
-          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+          margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           decoration: BoxDecoration(
             color: isDark ? Colors.grey[900] : Colors.grey[50],
             borderRadius: BorderRadius.circular(12),

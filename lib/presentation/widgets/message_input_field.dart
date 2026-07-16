@@ -23,12 +23,14 @@ class MessageInputField extends StatefulWidget {
 
 class _MessageInputFieldState extends State<MessageInputField> {
   late TextEditingController messageController;
+  late FocusNode _focusNode;
   bool isEmpty = true;
 
   @override
   void initState() {
     super.initState();
     messageController = TextEditingController();
+    _focusNode = FocusNode();
     messageController.addListener(() {
       setState(() {
         isEmpty = messageController.text.trim().isEmpty;
@@ -39,6 +41,7 @@ class _MessageInputFieldState extends State<MessageInputField> {
   @override
   void dispose() {
     messageController.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -54,6 +57,8 @@ class _MessageInputFieldState extends State<MessageInputField> {
     }
     widget.onSend(message);
     messageController.clear();
+    // Keep focus on the text field after sending
+    _focusNode.requestFocus();
   }
 
   @override
@@ -124,6 +129,7 @@ class _MessageInputFieldState extends State<MessageInputField> {
                     Expanded(
                       child: TextField(
                         controller: messageController,
+                        focusNode: _focusNode,
                         decoration: InputDecoration(
                           hintText: 'Type a message',
                           border: InputBorder.none,
@@ -134,7 +140,6 @@ class _MessageInputFieldState extends State<MessageInputField> {
                         ),
                         maxLines: null,
                         minLines: 1,
-                        enabled: !widget.isLoading,
                       ),
                     ),
                     const SizedBox(width: 8),

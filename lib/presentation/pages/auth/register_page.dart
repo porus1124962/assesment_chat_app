@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../config/router.dart';
 import '../../../core/utils/constants.dart';
 import '../../../core/widgets/custom_snackbar.dart';
 import '../../cubits/auth/auth_cubit.dart';
@@ -114,7 +115,9 @@ class _RegisterPageState extends State<RegisterPage> {
         padding: const EdgeInsets.all(defaultPadding),
         child: BlocListener<AuthCubit, AuthState>(
           listener: (context, state) {
-            if (state is AuthError) {
+            if (state is AuthSuccess) {
+              Navigator.pushReplacementNamed(context, AppRouter.homeRoute);
+            } else if (state is AuthError) {
               AppSnackBar.showError(context, state.message);
             }
           },
@@ -128,15 +131,15 @@ class _RegisterPageState extends State<RegisterPage> {
                     ? AutovalidateMode.onUserInteraction
                     : AutovalidateMode.disabled,
                 child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     SizedBox(height: MediaQuery.of(context).size.height * 0.1),
-                    Text(
-                      'Register',
-                      style: Theme.of(context).textTheme.displayLarge,
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 8),
+                    // Image.asset(
+                    //   'images/codebase_logo.png',
+                    //   height: 60,
+                    // ),
+                    // const SizedBox(height: 10),
                     Text(
                       'Create Account',
                       style: Theme.of(context).textTheme.headlineMedium,
