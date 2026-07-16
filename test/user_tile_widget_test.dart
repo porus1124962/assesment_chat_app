@@ -20,6 +20,9 @@ void main() {
             body: UserTile(
               user: testUser,
               onTap: () {},
+              currentUserId: 'current-user-id',
+              lastMessage: null,
+              isUnread: false,
             ),
           ),
         ),
@@ -36,6 +39,9 @@ void main() {
             body: UserTile(
               user: testUser,
               onTap: () {},
+              currentUserId: 'current-user-id',
+              lastMessage: null,
+              isUnread: false,
             ),
           ),
         ),
@@ -55,12 +61,15 @@ void main() {
               onTap: () {
                 wasPressed = true;
               },
+              currentUserId: 'current-user-id',
+              lastMessage: null,
+              isUnread: false,
             ),
           ),
         ),
       );
 
-      await tester.tap(find.byType(GestureDetector));
+      await tester.tap(find.byType(InkWell));
       await tester.pumpAndSettle();
 
       expect(wasPressed, true);
@@ -73,6 +82,9 @@ void main() {
             body: UserTile(
               user: testUser,
               onTap: () {},
+              currentUserId: 'current-user-id',
+              lastMessage: null,
+              isUnread: false,
             ),
           ),
         ),

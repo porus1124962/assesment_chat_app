@@ -3,19 +3,26 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:assesment_chat_app/domain/entities/user.dart';
+import 'package:assesment_chat_app/domain/repositories/chat_repository.dart';
 import 'package:assesment_chat_app/data/repositories/user_repository_impl.dart';
 import 'package:assesment_chat_app/presentation/cubits/user/user_list_cubit.dart';
 import 'package:assesment_chat_app/presentation/cubits/user/user_list_state.dart';
 
 class MockUserRepository extends Mock implements UserRepositoryImpl {}
+class MockChatRepository extends Mock implements ChatRepository {}
 
 void main() {
   late UserListCubit userListCubit;
   late MockUserRepository mockUserRepository;
+  late MockChatRepository mockChatRepository;
 
   setUp(() {
     mockUserRepository = MockUserRepository();
-    userListCubit = UserListCubit(userRepository: mockUserRepository);
+    mockChatRepository = MockChatRepository();
+    userListCubit = UserListCubit(
+      userRepository: mockUserRepository,
+      chatRepository: mockChatRepository,
+    );
   });
 
   tearDown(() => userListCubit.close());
